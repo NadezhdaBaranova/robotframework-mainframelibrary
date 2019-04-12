@@ -1,0 +1,7 @@
+/.idea/
+/build/
+/__pycache__/
+/dist/
+robotframework_mainframelibrary.egg-info
+/TestData/
+Tests.py

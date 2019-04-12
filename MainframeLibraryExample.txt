@@ -1,0 +1,54 @@
+ *** Settings ***
+ Library   MainframeLibrary
+ 
+ *** Variables ***
+ ${mainframe_host}        my_host
+ ${mainframe_login}       my_login
+ ${mainframe_password}    my_psw
+ 
+ ${data_folder}           TestData/
+ ${jcl_file}              SomethingUseful.jcl
+ ${dataset_to_retreive}   DATASET.FROM.MAINFR
+ ${dataset_to_upload}     DATASET.TO.MAINFR
+ ${new_mainframe_folder}  NEW.FOLDER
+ 
+ ${job_id}
+ 
+ *** Test Cases *** 
+ 
+Connect To Mainframe
+     Mainframe Connect    ${mainframe_host}    ${mainframe_login}    ${mainframe_password}
+
+Submit JCL and get spool
+     ${job_id}         Mainframe Submit Job From File    ${data_folder}${jcl_file}   
+                       Mainframe Retrieve Job Spool Info To File    ${job_id}    ${mainframe_login}     ${data_folder}${jcl_file}_Spool_Info_${job_id}.txt    Info  
+                       Mainframe Retrieve Job Spool Info To File    ${job_id}    ${mainframe_login}     ${data_folder}${jcl_file}_Spool_Verbose_${job_id}.txt    Verbose  
+    ${spool_info}      Mainframe Retrieve Job Spool Info As Lines   ${job_id}    ${mainframe_login}     Info
+                       Log    ${spool_info}
+    ${spool_verb}      Mainframe Retrieve Job Spool Info As Lines   ${job_id}    ${mainframe_login}     Verbose
+                       Log    ${spool_verb}
+Get Dataset
+      Mainframe Retrieve Dataset     ${dataset_to_retreive}     ${data_folder}${dataset_to_retreive}
+                        
+Upload dataset
+    Mainframe Upload Dataset     ${data_folder}${dataset_to_upload}    ${dataset_to_upload}
+    
+Delete dataset
+    Mainframe Delete Dataset    ${dataset_to_upload}  
+    Mainframe Delete Dataset    ${new_mainframe_folder}  
+    
+Change Working Directory
+    Mainframe Change Working Directory    ..     
+    Mainframe Retrieve Dataset    ${mainframe_login}.${dataset_to_retreive}    ${data_folder}${dataset_to_retreive}
+    Mainframe Change Working Directory    ${mainframe_login}  
+    
+Create New Directory
+    Mainframe Create Directory    ${new_mainframe_folder}  
+    
+List Directory
+    Mainframe List Directory    dataset  
+    Mainframe List Directory    dataset  ${new_mainframe_folder}
+    Mainframe List Directory    spool    ${job_id}  
+         
+ Disconnect From Mainframe
+     Mainframe Quit
